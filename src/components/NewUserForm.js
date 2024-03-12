@@ -105,7 +105,7 @@ const NewUserForm = () => {
     };
     console.log(updatedFormData);
     await updateUser(formData.userId, updatedFormData);
-
+    sendFollowUpMessage(formData.userId);
     // Close the Web App after submission
     if (window.Telegram) {
       window.Telegram.WebApp.close();
@@ -176,3 +176,21 @@ const NewUserForm = () => {
 };
 
 export default NewUserForm;
+
+// This function sends a follow-up message request to the server
+function sendFollowUpMessage(chatId) {
+  fetch("http://localhost:3000/follow-up", {
+    // Use localhost for testing, but this needs to be updated for production
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chatId: chatId,
+      message: "Thank you for submitting your details! What's next?",
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => console.log("Success:", data))
+    .catch((error) => console.error("Error:", error));
+}
