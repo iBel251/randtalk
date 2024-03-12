@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   TextField,
   MenuItem,
@@ -16,7 +16,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
+    height: "100%",
     background: "goldenrod",
     padding: "5px",
   },
@@ -44,6 +44,7 @@ const NewUserForm = () => {
     gender: "",
     age: "",
     city: "",
+    userId: null,
   });
   const [formErrors, setFormErrors] = React.useState({
     gender: "",
@@ -51,7 +52,22 @@ const NewUserForm = () => {
     city: "",
   });
   const { updateUser } = useUserAuth();
-  const id = "344468363";
+  useEffect(() => {
+    const id = "344468363";
+    setFormData((prevState) => ({
+      ...prevState,
+      ["userId"]: id,
+    }));
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-web-app.js";
+    script.async = true;
+    document.body.appendChild(script);
+    // Cleanup function to remove script if needed
+    // return () => document.body.removeChild(script);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -88,7 +104,12 @@ const NewUserForm = () => {
       age: Number(formData.age),
     };
     console.log(updatedFormData);
-    await updateUser(id, updatedFormData);
+    await updateUser(formData.userId, updatedFormData);
+
+    // Close the Web App after submission
+    if (window.Telegram) {
+      window.Telegram.WebApp.close();
+    }
   };
 
   return (
