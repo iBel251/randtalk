@@ -45,10 +45,10 @@ const Home = () => {
     if (success) {
       const message =
         "Registration successfull, Click on start to find a match.";
-      await sendFollowUpMessage(id, message);
+      sendFollowUpMessage(id, message);
     } else {
       const message = "Something was wrong, Registration not complete.";
-      await sendFollowUpMessage(id, message);
+      sendFollowUpMessage(id, message);
     }
     // Close the Web App after submission
     if (window.Telegram) {
@@ -100,26 +100,20 @@ const Home = () => {
 
 export default Home;
 
+// This function sends a follow-up message request to the server
 function sendFollowUpMessage(chatId, message) {
-  return new Promise((resolve, reject) => {
-    fetch("http://localhost:3000/follow-up", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        chatId: chatId,
-        message: message,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        resolve(data); // Resolve the promise with the data
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        reject(error); // Reject the promise with the error
-      });
-  });
+  fetch("http://localhost:3000/follow-up", {
+    // Use localhost for testing, but this needs to be updated for production
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chatId: chatId,
+      message: message,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => console.log("Success:", data))
+    .catch((error) => console.error("Error:", error));
 }
