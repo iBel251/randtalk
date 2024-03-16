@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   MenuItem,
@@ -8,17 +8,22 @@ import {
   Button,
   Box,
   FormHelperText,
+  Typography,
 } from "@mui/material";
 import { useUserAuth } from "../context/AuthContext";
+import useMainStore from "../store/mainStore";
 
 const styles = {
   container: {
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    height: "100%",
+    // height: "calc(100vh - 25px)",
+    padding: "0",
+    margin: "0",
+    // height: "100%",
     background: "goldenrod",
-    padding: "5px",
   },
   form: {
     display: "flex",
@@ -30,6 +35,7 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid goldenrod",
     color: "goldenrod",
+    width: "100%",
   },
   button: {
     backgroundColor: "goldenrod",
@@ -39,35 +45,28 @@ const styles = {
   },
 };
 
-const NewUserForm = () => {
-  const [formData, setFormData] = React.useState({
+const NewUserForm = ({ setPage }) => {
+  const { setUserData, userData } = useMainStore();
+  const [formData, setFormData] = useState({
     gender: "",
     age: "",
     city: "",
     userId: null,
   });
-  const [formErrors, setFormErrors] = React.useState({
+  const [formErrors, setFormErrors] = useState({
     gender: "",
     age: "",
     city: "",
   });
+
   const { updateUser } = useUserAuth();
-  useEffect(() => {
-    const id = "344468363";
-    setFormData((prevState) => ({
-      ...prevState,
-      ["userId"]: id,
-    }));
-  }, []);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-web-app.js";
-    script.async = true;
-    document.body.appendChild(script);
-    // Cleanup function to remove script if needed
-    // return () => document.body.removeChild(script);
-  }, []);
+    if (userData) {
+      setFormData(userData);
+      console.log(userData);
+    }
+  }, [userData]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -95,7 +94,7 @@ const NewUserForm = () => {
     return Object.keys(errors).length === 0; // Returns true if no errors
   };
 
-  const handleSubmit = async (event) => {
+  const handleNext = async (event) => {
     event.preventDefault();
     if (!validateForm()) return; // Stops submission if validation fails
 
@@ -104,17 +103,17 @@ const NewUserForm = () => {
       age: Number(formData.age),
     };
     console.log(updatedFormData);
-    await updateUser(formData.userId, updatedFormData);
-    sendFollowUpMessage(formData.userId);
-    // Close the Web App after submission
-    if (window.Telegram) {
-      window.Telegram.WebApp.close();
-    }
+    setUserData(updatedFormData);
+    setPage("preferences");
   };
 
   return (
     <Box sx={styles.container}>
-      <Box component="form" onSubmit={handleSubmit} sx={styles.form}>
+      <Typography sx={{ margin: "0 10px 10px 10px" }}>
+        Please fill your specifications. Your data will be kept annonymus and
+        will never be shared with any user.
+      </Typography>
+      <Box component="form" onSubmit={handleNext} sx={styles.form}>
         <FormControl fullWidth error={Boolean(formErrors.gender)}>
           <InputLabel id="gender-select-label">Gender</InputLabel>
           <Select
@@ -168,7 +167,7 @@ const NewUserForm = () => {
           <FormHelperText>{formErrors.city}</FormHelperText>
         </FormControl>
         <Button type="submit" variant="contained" sx={styles.button}>
-          Submit
+          Next
         </Button>
       </Box>
     </Box>
@@ -176,21 +175,3 @@ const NewUserForm = () => {
 };
 
 export default NewUserForm;
-
-// This function sends a follow-up message request to the server
-function sendFollowUpMessage(chatId) {
-  fetch("http://localhost:3000/follow-up", {
-    // Use localhost for testing, but this needs to be updated for production
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      chatId: chatId,
-      message: "Thank you for submitting your details! What's next?",
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => console.log("Success:", data))
-    .catch((error) => console.error("Error:", error));
-}

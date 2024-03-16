@@ -1,19 +1,29 @@
 import React, { createContext, useContext } from "react";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import supabase from "../supabaseClient";
 
 const UserContext = createContext(null);
 
 export const AuthContextProvider = ({ children }) => {
   // Function to update user data in the "users" collection
-  const updateUser = async (userId, data) => {
-    console.log(userId, data);
-    const userRef = doc(db, "users", userId);
-    try {
-      await updateDoc(userRef, data);
-      console.log("User updated successfully");
-    } catch (error) {
-      console.error("Error updating user:", error);
+  const updateUser = async (id, userData, preferenceData) => {
+    console.log(id, userData, preferenceData);
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        preferences: preferenceData,
+        age: userData.age,
+        gender: userData.gender,
+        city: userData.city,
+        is_registered: true,
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.log("error updating data in supabase : ", error);
+      return { success: false, error };
+    } else {
+      console.log("registration finished");
+      return { success: true, data };
     }
   };
 
