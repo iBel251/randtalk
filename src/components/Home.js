@@ -50,12 +50,12 @@ const Home = () => {
       const message = "Something was wrong, Registration not complete.";
       sendFollowUpMessage(id, message);
     }
-    // Close the Web App after submission
-    if (window.Telegram) {
-      window.Telegram.WebApp.close();
-    } else {
-      console.log("this is not on telegram");
-    }
+    // // Close the Web App after submission
+    // if (window.Telegram) {
+    //   window.Telegram.WebApp.close();
+    // } else {
+    //   console.log("this is not on telegram");
+    // }
   };
   if (!id) {
     return (
