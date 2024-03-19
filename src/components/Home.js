@@ -49,14 +49,11 @@ const Home = () => {
     const { success, error } = await updateUser(id, userData, preferenceData);
     setIsLoading(false);
     if (success) {
-      const message =
-        "Registration successfull, Click on start to find a match.";
       setIsError(false);
       setResponseMessage(
         "Registration successful. Click on start to find a match."
       );
       setPage("success");
-      // sendMessageToTelegram(id, message);
       sendActionToBot("registration_successful");
       closeWebApp();
     } else {
