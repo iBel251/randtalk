@@ -6,6 +6,7 @@ import { useUserAuth } from "../context/AuthContext";
 import useMainStore from "../store/mainStore";
 import { useParams } from "react-router-dom";
 import { DNA } from "react-loader-spinner";
+import { closeWebApp, sendActionToBot } from "../functions/botFunctions";
 
 const styles = {
   container: {
@@ -27,7 +28,7 @@ const Home = () => {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { userData, preferenceData } = useMainStore();
+  const { userData } = useMainStore();
 
   const { updateUser } = useUserAuth();
   let { id } = useParams();
@@ -44,7 +45,7 @@ const Home = () => {
     }, 100); // 100 milliseconds delay
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (preferenceData) => {
     setIsLoading(true);
     const { success, error } = await updateUser(id, userData, preferenceData);
     setIsLoading(false);
@@ -159,55 +160,21 @@ const Home = () => {
 
 export default Home;
 
-function sendMessageToTelegram(chatId, messageText) {
-  const botToken = process.env.REACT_APP_BOT_TOKEN;
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+// function closeWebApp() {
+//   // Close the Web App after submission
+//   if (window.Telegram) {
+//     window.Telegram.WebApp.close();
+//     console.log("window closed");
+//   } else {
+//     console.log("this is not on telegram");
+//   }
+// }
 
-  // Define the keyboard layout
-  const keyboard = {
-    reply_markup: {
-      keyboard: [["Start chat", "Edit profile", "Edit preferences"]],
-      resize_keyboard: true,
-      one_time_keyboard: false,
-    },
-  };
-  const data = {
-    chat_id: chatId,
-    text: messageText,
-    ...keyboard,
-  };
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("Message sent:", result);
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
-    });
-}
-
-function closeWebApp() {
-  // Close the Web App after submission
-  if (window.Telegram) {
-    window.Telegram.WebApp.close();
-    console.log("window closed");
-  } else {
-    console.log("this is not on telegram");
-  }
-}
-
-function sendActionToBot(action) {
-  if (window.Telegram && window.Telegram.WebApp) {
-    const data = JSON.stringify({ action });
-    window.Telegram.WebApp.sendData(data);
-  } else {
-    console.log("Telegram.WebApp is not available.");
-  }
-}
+// function sendActionToBot(action) {
+//   if (window.Telegram && window.Telegram.WebApp) {
+//     const data = JSON.stringify({ action });
+//     window.Telegram.WebApp.sendData(data);
+//   } else {
+//     console.log("Telegram.WebApp is not available.");
+//   }
+// }

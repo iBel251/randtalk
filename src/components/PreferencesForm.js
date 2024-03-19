@@ -92,7 +92,7 @@ const PreferencesForm = ({ setPage, onSave, globalErrorMessage }) => {
     if (!validateForm()) return;
 
     setPreferenceData(formData);
-    onSave();
+    onSave(formData);
   };
 
   return (

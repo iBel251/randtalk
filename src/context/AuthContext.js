@@ -26,9 +26,41 @@ export const AuthContextProvider = ({ children }) => {
       return { success: true, data };
     }
   };
+  const updateUserProfileOnly = async (id, userData) => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        age: userData.age,
+        gender: userData.gender,
+        city: userData.city,
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.log("error updating data in supabase : ", error);
+      return { success: false, error };
+    } else {
+      console.log("registration finished");
+      return { success: true, data };
+    }
+  };
+
+  const getUserDataById = async (id) => {
+    if (!id) {
+      return "Error! userID is required";
+    }
+    const { data, error } = await supabase
+      .from("users")
+      .select("gender, city, age")
+      .eq("id", id)
+      .single();
+
+    if (error) return error.message;
+    return data;
+  };
 
   // Value to be passed to the context consumers
-  const value = { updateUser };
+  const value = { updateUser, getUserDataById, updateUserProfileOnly };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
