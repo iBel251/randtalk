@@ -39,6 +39,9 @@ const Home = () => {
     document.body.appendChild(script);
     // Cleanup function to remove script if needed
     // return () => document.body.removeChild(script);
+    setTimeout(() => {
+      window.scrollTo(0, 1);
+    }, 100); // 100 milliseconds delay
   }, []);
 
   const handleSubmit = async () => {
@@ -53,7 +56,8 @@ const Home = () => {
         "Registration successful. Click on start to find a match."
       );
       setPage("success");
-      sendMessageToTelegram(id, message);
+      // sendMessageToTelegram(id, message);
+      sendActionToBot("registration_successful");
       closeWebApp();
     } else {
       const message = "Something was wrong, Registration not complete.";
@@ -199,5 +203,14 @@ function closeWebApp() {
     console.log("window closed");
   } else {
     console.log("this is not on telegram");
+  }
+}
+
+function sendActionToBot(action) {
+  if (window.Telegram && window.Telegram.WebApp) {
+    const data = JSON.stringify({ action });
+    window.Telegram.WebApp.sendData(data);
+  } else {
+    console.log("Telegram.WebApp is not available.");
   }
 }
