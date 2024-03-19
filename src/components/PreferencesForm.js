@@ -42,7 +42,7 @@ const styles = {
   },
 };
 
-const PreferencesForm = ({ setPage, onSave }) => {
+const PreferencesForm = ({ setPage, onSave, globalErrorMessage }) => {
   const { preferenceData, setPreferenceData } = useMainStore();
   const [formData, setFormData] = useState({
     gender: "",
@@ -157,6 +157,11 @@ const PreferencesForm = ({ setPage, onSave }) => {
           </Select>
           <FormHelperText>{formErrors.city}</FormHelperText>
         </FormControl>
+        {globalErrorMessage && (
+          <Typography color="error" sx={{ textAlign: "center" }}>
+            {globalErrorMessage}
+          </Typography>
+        )}
         <Button
           variant="contained"
           sx={styles.button}

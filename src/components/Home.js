@@ -1,10 +1,11 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import NewUserForm from "./NewUserForm";
 import PreferencesForm from "./PreferencesForm";
 import { useUserAuth } from "../context/AuthContext";
 import useMainStore from "../store/mainStore";
 import { useParams } from "react-router-dom";
+import { DNA } from "react-loader-spinner";
 
 const styles = {
   container: {
@@ -22,6 +23,10 @@ const styles = {
 
 const Home = () => {
   const [page, setPage] = useState("userform");
+  const [responseMessage, setResponseMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const { userData, preferenceData } = useMainStore();
 
   const { updateUser } = useUserAuth();
@@ -36,26 +41,27 @@ const Home = () => {
     // return () => document.body.removeChild(script);
   }, []);
 
-  useEffect(() => {
-    console.log("formdata from home ", userData);
-  }, [userData]);
-
   const handleSubmit = async () => {
+    setIsLoading(true);
     const { success, error } = await updateUser(id, userData, preferenceData);
+    setIsLoading(false);
     if (success) {
       const message =
         "Registration successfull, Click on start to find a match.";
-      sendFollowUpMessage(id, message);
+      setIsError(false);
+      setResponseMessage(
+        "Registration successful. Click on start to find a match."
+      );
+      setPage("success");
+      sendMessageToTelegram(id, message);
+      closeWebApp();
     } else {
       const message = "Something was wrong, Registration not complete.";
-      sendFollowUpMessage(id, message);
+      setResponseMessage(
+        error || "Something went wrong, registration not complete."
+      );
+      setIsError(true);
     }
-    // // Close the Web App after submission
-    // if (window.Telegram) {
-    //   window.Telegram.WebApp.close();
-    // } else {
-    //   console.log("this is not on telegram");
-    // }
   };
   if (!id) {
     return (
@@ -70,6 +76,54 @@ const Home = () => {
           }}
         >
           Sorry, Page can only be accessed directly from telegram RandXtalk bot.
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (page === "success") {
+    return (
+      <Box sx={styles.container}>
+        <Typography
+          sx={{
+            background: "white",
+            margin: "20px",
+            padding: "20px",
+            fontSize: "25px",
+            color: isError ? "red" : "green",
+            textAlign: "center",
+          }}
+        >
+          {responseMessage}
+        </Typography>
+        {!isError && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              // Logic to redirect back to the bot, or you can close the web app if it's opened in Telegram.
+            }}
+          >
+            Return to Bot
+          </Button>
+        )}
+      </Box>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Box sx={styles.container}>
+        <DNA
+          visible={true}
+          height="250"
+          width="250"
+          ariaLabel="dna-loading"
+          wrapperStyle={{}}
+          wrapperClass="dna-wrapper"
+        />
+        <Typography sx={{ fontSize: "30px", fontWeight: "bold" }}>
+          Please wait...
         </Typography>
       </Box>
     );
@@ -92,7 +146,11 @@ const Home = () => {
       {page === "userform" ? (
         <NewUserForm setPage={setPage} />
       ) : page === "preferences" ? (
-        <PreferencesForm setPage={setPage} onSave={handleSubmit} />
+        <PreferencesForm
+          setPage={setPage}
+          onSave={handleSubmit}
+          globalErrorMessage={responseMessage}
+        />
       ) : null}
     </Box>
   );
@@ -100,20 +158,46 @@ const Home = () => {
 
 export default Home;
 
-// This function sends a follow-up message request to the server
-function sendFollowUpMessage(chatId, message) {
-  fetch("http://localhost:3000/follow-up", {
-    // Use localhost for testing, but this needs to be updated for production
+function sendMessageToTelegram(chatId, messageText) {
+  const botToken = process.env.REACT_APP_BOT_TOKEN;
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+  // Define the keyboard layout
+  const keyboard = {
+    reply_markup: {
+      keyboard: [["Start chat", "Edit profile", "Edit preferences"]],
+      resize_keyboard: true,
+      one_time_keyboard: false,
+    },
+  };
+  const data = {
+    chat_id: chatId,
+    text: messageText,
+    ...keyboard,
+  };
+
+  fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      chatId: chatId,
-      message: message,
-    }),
+    body: JSON.stringify(data),
   })
     .then((response) => response.json())
-    .then((data) => console.log("Success:", data))
-    .catch((error) => console.error("Error:", error));
+    .then((result) => {
+      console.log("Message sent:", result);
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error);
+    });
+}
+
+function closeWebApp() {
+  // Close the Web App after submission
+  if (window.Telegram) {
+    window.Telegram.WebApp.close();
+    console.log("window closed");
+  } else {
+    console.log("this is not on telegram");
+  }
 }
