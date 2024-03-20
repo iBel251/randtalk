@@ -34,12 +34,12 @@ const Home = () => {
   let { id } = useParams();
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-web-app.js";
-    script.async = true;
-    document.body.appendChild(script);
-    // Cleanup function to remove script if needed
-    // return () => document.body.removeChild(script);
+    // const script = document.createElement("script");
+    // script.src = "https://telegram.org/js/telegram-web-app.js";
+    // script.async = true;
+    // document.body.appendChild(script);
+    // // Cleanup function to remove script if needed
+    // // return () => document.body.removeChild(script);
     setTimeout(() => {
       window.scrollTo(0, 1);
     }, 100); // 100 milliseconds delay
