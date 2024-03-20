@@ -44,6 +44,22 @@ export const AuthContextProvider = ({ children }) => {
       return { success: true, data };
     }
   };
+  const updateUserPreferenceOnly = async (id, preferenceData) => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        preferences: preferenceData,
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.log("error updating data in supabase : ", error);
+      return { success: false, error };
+    } else {
+      console.log("Preference update finished");
+      return { success: true, data };
+    }
+  };
 
   const getUserDataById = async (id) => {
     if (!id) {
@@ -51,7 +67,7 @@ export const AuthContextProvider = ({ children }) => {
     }
     const { data, error } = await supabase
       .from("users")
-      .select("gender, city, age")
+      .select("gender, city, age,preferences")
       .eq("id", id)
       .single();
 
@@ -60,7 +76,12 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   // Value to be passed to the context consumers
-  const value = { updateUser, getUserDataById, updateUserProfileOnly };
+  const value = {
+    updateUser,
+    updateUserProfileOnly,
+    updateUserPreferenceOnly,
+    getUserDataById,
+  };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
